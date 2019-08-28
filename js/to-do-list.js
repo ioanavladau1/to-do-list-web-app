@@ -20,6 +20,7 @@ window.ToDoList = {
       }).done(function (response) {
          console.log("Succesfully received response")
           console.log(response);
+          ToDoList.getItems();
       })
    },
 
@@ -36,6 +37,33 @@ window.ToDoList = {
         })
     },
 
+
+    deleteItem: function (itemId){
+
+        $.ajax({
+            url: ToDoList.API_BASE_URL + "?id=" + itemId,
+            method: "DELETE",
+        }).done(function (response) {
+            ToDoList.getItems();
+        })
+    },
+
+
+    updateItem: function (itemId){
+
+        $.ajax({
+            url: ToDoList.API_BASE_URL+ "?id=" + itemId,
+            method: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify(item),
+            done: done
+        }).done(function (response) {
+            ToDoList.getItems();
+
+        })
+    },
+
+
     displayItems: function (items) {
        var tableBodyHtml = " ";
 
@@ -50,8 +78,8 @@ window.ToDoList = {
        return `<tr>
             <td>${item.description}</td>
             <td>${formattedDate}</td>
-            <td><input type="checkbox" class="mark-done-checkbox" title="Completed"/></td>
-            <td><a href="#" class="delete-item fa fa-trash"></a> </td>
+            <td><input type="checkbox" class="mark-done-checkbox" title="Completed" data-id="${item.id}"/></td>
+            <td><a href="#" class="delete-item fa fa-trash" data-id="${item.id}"></a> </td>
         </tr>`
 
     },
@@ -66,6 +94,23 @@ window.ToDoList = {
 
         });
 
+        //using delegate because the element a.delete-item is dymamically injected
+       //after the page has been loaded
+        $("to-do-items-table").delegate(".delete-item", "click", function (event) {
+            event.preventDefault();
+
+            var itemId = $(this).data("id");
+            ToDoList.deleteItem();
+        });
+
+       $("to-do-items-table").delegate(".mark-done-checkbox", "change", function (event) {
+           event.preventDefault();
+
+           var itemId = $(this).data("id");
+           var checkboxChecked = $ (this).is(":checked");
+
+           ToDoList.updateItem(itemId,checkboxChecked);
+       });
    }
     
 };
